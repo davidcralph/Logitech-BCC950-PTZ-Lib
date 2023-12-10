@@ -6,6 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{7345DC27-7F35-43AD-86B4-6826FC1475BE}</ProjectGuid>
     <OutputType>Library</OutputType>
+    <OutputPath>$(MSBuildProjectDirectory)\</OutputPath>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PTZDevice</RootNamespace>
     <AssemblyName>PTZDevice</AssemblyName>
