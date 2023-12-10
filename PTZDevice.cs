@@ -121,6 +121,93 @@ namespace PTZ
             if (instData != IntPtr.Zero) { Marshal.FreeCoTaskMem(instData); }
         }
 
+        private void MoveDirection(
+            KSProperties.CameraControlFeature cameraControlFeature,
+            int durationMilliseconds,
+            int value
+            )
+        {
+            // Create and prepare data structures
+            var control = new KSProperties.KSPROPERTY_CAMERACONTROL_S();
+
+            IntPtr controlData = Marshal.AllocCoTaskMem(Marshal.SizeOf(control));
+            IntPtr instData = Marshal.AllocCoTaskMem(Marshal.SizeOf(control.Instance));
+
+            control.Instance.Value = value;
+
+            //TODO: Fix for Absolute
+            control.Instance.Flags = (int)CameraControlFlags.Relative;
+
+            Marshal.StructureToPtr(control, controlData, true);
+            Marshal.StructureToPtr(control.Instance, instData, true);
+
+            _ksPropertySet.Set(
+                PROPSETID_VIDCAP_CAMERACONTROL,
+                (int) cameraControlFeature,
+                instData,
+                Marshal.SizeOf(control.Instance),
+                controlData, Marshal.SizeOf(control)
+            );
+
+            // do stop after a while, to be safe
+            Thread.Sleep(durationMilliseconds);
+
+            control.Instance.Value = 0; //STOP!
+            control.Instance.Flags = (int) CameraControlFlags.Relative;
+
+            Marshal.StructureToPtr(control, controlData, true);
+            Marshal.StructureToPtr(control.Instance, instData, true);
+
+            _ksPropertySet.Set(
+                PROPSETID_VIDCAP_CAMERACONTROL,
+                (int) cameraControlFeature,
+                instData,
+                Marshal.SizeOf(control.Instance),
+                controlData, Marshal.SizeOf(control)
+            );
+
+            if (controlData != IntPtr.Zero) { Marshal.FreeCoTaskMem(controlData); }
+            if (instData != IntPtr.Zero) { Marshal.FreeCoTaskMem(instData); }
+        }
+
+        // MOVE IN BURSTS, CHERRY PICKED FROM <https://github.com/matzko/Logitech-BCC950-PTZ-Lib/commit/9ab31bac954518bff116fd0765c99bbc0e355408>
+        public void MoveUp(int durationMilliseconds)
+        {
+            MoveDirection(
+                KSProperties.CameraControlFeature.KSPROPERTY_CAMERACONTROL_TILT_RELATIVE,
+                durationMilliseconds,
+                1
+            );
+        }
+
+        public void MoveDown(int durationMilliseconds)
+        {
+            MoveDirection(
+                KSProperties.CameraControlFeature.KSPROPERTY_CAMERACONTROL_TILT_RELATIVE,
+                durationMilliseconds,
+                -1
+            );
+        }
+
+        public void MoveLeft(int durationMilliseconds)
+        {
+            MoveDirection(
+                KSProperties.CameraControlFeature.KSPROPERTY_CAMERACONTROL_PAN_RELATIVE,
+                durationMilliseconds,
+                -1
+            );
+        }
+
+        public void MoveRight(int durationMilliseconds)
+        {
+            MoveDirection(
+                KSProperties.CameraControlFeature.KSPROPERTY_CAMERACONTROL_PAN_RELATIVE,
+                durationMilliseconds,
+                1
+            );
+        }
+
+        // ZOOM
         private int GetCurrentZoom()
         {
             int oldZoom = 0;
